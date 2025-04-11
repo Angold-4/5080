@@ -1,1 +1,1 @@
-# Analyzing How Modern NVIDIA GPU Works
+# Analyzing How Modern GPU Works

@@ -1,18 +1,10 @@
 use ocl::{ProQue, Result};
+
 // https://github.com/geohot/gpunoob
 
 //            OpenCL        CUDA       HIP
 // G cores   (get_group_id, blockIdx,  __ockl_get_group_id, threadgroup_position_in_grid)
 // L threads (get_local_id, threadIdx, __ockl_get_local_id, thread_position_in_threadgroup)
-
-// On NVIDIA, cores are streaming multiprocessors (SMs).
-//   AD102 (4090) has 144 SMs with 128 threads each (18432 CUDA Cores)
-//   GB203 (5080) has  84 SMs with 128 threads each (10752 CUDA Cores)
-// On AMD, cores are compute units.
-//   7900XTX has 96 CUs with with 64 threads each
-
-// GPUs have warps. Warps are groups of threads, and all modern GPUs have them as 32 threads.
-// GPUs are multicore processors with 32 threads
 
 fn main() -> Result<()> {
     // Kernel source code (OpenCL, C)
@@ -29,7 +21,7 @@ fn main() -> Result<()> {
     "#;
 
     // Initialize ProQue
-    let proque = ProQue::builder().src(kernel_src).dims(262144).build()?;
+    let proque = ProQue::builder().src(kernel_src).dims(4194304).build()?;
 
     // Input data (In CPU)
     // let a_data = vec![1.0f32; 128];
@@ -57,10 +49,11 @@ fn main() -> Result<()> {
 
     // Execute the kernel
     unsafe {
-        kernel.cmd().local_work_size(32).enq()?;
+        kernel.cmd().local_work_size(256).enq()?;
     }
 
     let _ = proque.finish();
+
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
 
